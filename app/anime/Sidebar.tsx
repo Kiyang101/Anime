@@ -9,7 +9,7 @@ export default function Sidebar({
   clearFilters, // Added prop
 }: {
   className?: string;
-  setSeasons: (season: string, year: string) => void;
+  setSeasons: (season: string, year: string, sfw: boolean) => void;
   setSearchParams: (
     query: string,
     rating: string,
