@@ -35,7 +35,7 @@ export default function Sidebar({
 }) {
   const [season, setSeason] = useState(currentSeason.season || "");
   const [year, setYear] = useState(currentSeason.year || "");
-  const [sfw, setSfw] = useState(currentSeason.sfw || true);
+  const [sfw, setSfw] = useState<boolean>(currentSeason.sfw ?? true);
 
   const [query, setQuery] = useState(currentSearch.query || "");
   const [rating, setRating] = useState(currentSearch.rating || "");
@@ -44,7 +44,9 @@ export default function Sidebar({
   const [startDate, setStartDate] = useState(currentSearch.startDate || "");
   const [type, setType] = useState(currentSearch.type || "");
   const [status, setStatus] = useState(currentSearch.status || "");
-  const [sfwSearch, setSfwSearch] = useState(currentSearch.sfw || true);
+  const [sfwSearch, setSfwSearch] = useState<boolean>(
+    currentSearch.sfw ?? true,
+  );
 
   // We use this to force the uncontrolled search form to remount and empty out when cleared
   const [formResetKey, setFormResetKey] = useState(0);
@@ -284,6 +286,7 @@ export default function Sidebar({
                 id="sfw"
                 checked={sfwSearch}
                 onChange={(e) => {
+                  console.log("SFW Checkbox changed:", e.target.checked);
                   setSfwSearch(e.target.checked);
                 }}
                 className="w-4 h-4 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500 focus:ring-2 cursor-pointer"
