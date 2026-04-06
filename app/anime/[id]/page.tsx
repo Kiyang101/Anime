@@ -93,8 +93,8 @@ export default function Page() {
       try {
         // Fetch both anime details and character list concurrently
         const [animeResult, charactersResult] = await Promise.all([
-          getAnimeById(id),
-          getAnimeCharacters(id),
+          getAnimeById(String(id)),
+          getAnimeCharacters(String(id)),
         ]);
         setAnimeData(animeResult.data);
         setCharacters(charactersResult.data);
@@ -113,7 +113,7 @@ export default function Page() {
     setIsModalOpen(true);
     setCharLoading(true);
     try {
-      const result = await getCharacterFullById(charId);
+      const result = await getCharacterFullById(String(charId));
       setSelectedCharacter(result.data);
     } catch (error) {
       console.error("Failed to fetch character details:", error);

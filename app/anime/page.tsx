@@ -41,7 +41,7 @@ export default function Page() {
   const [seasonData, setSeasonData] = useState({
     season: "",
     year: "",
-    sfw: null as boolean | null,
+    sfw: true,
   });
 
   const [searchParams, setSearchParamsState] = useState({
@@ -94,6 +94,7 @@ export default function Page() {
       query: "",
       rating: "",
       orderBy: "",
+      sort: "",
       startDate: "",
       type: "",
       status: "",
@@ -173,8 +174,8 @@ export default function Page() {
             seasonData.season,
             seasonData.year,
             page,
-            seasonData.sfw,
             "tv",
+            seasonData.sfw,
             { signal: controller.signal },
           );
         }
@@ -182,7 +183,7 @@ export default function Page() {
         if (!controller.signal.aborted) {
           setData(response);
         }
-      } catch (error) {
+      } catch (error: any) {
         if (
           error.name !== "AbortError" &&
           error.name !== "CanceledError" &&
@@ -236,7 +237,7 @@ export default function Page() {
   };
 
   const clearFilters = () => {
-    setSeasonData({ season: "", year: "", sfw: null });
+    setSeasonData({ season: "", year: "", sfw: true });
     setSearchParamsState({
       query: "",
       rating: "",

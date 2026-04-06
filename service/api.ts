@@ -20,8 +20,8 @@ export default function useAnimeAPI() {
     season: string,
     year: string,
     page: number,
-    sfw?: boolean,
     filter: string,
+    sfw: boolean,
     options?: { signal?: AbortSignal },
   ) => {
     try {
@@ -93,7 +93,7 @@ export default function useAnimeAPI() {
         { signal: params.signal }, // Pass signal to axios
       );
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       // Bulletproof check for Axios cancellation
       if (
         axios.isCancel(error) ||
