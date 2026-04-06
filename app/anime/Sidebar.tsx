@@ -20,7 +20,7 @@ export default function Sidebar({
     status: string,
     sfw: boolean,
   ) => void;
-  currentSeason: { season: string; year: string; sfw: boolean | null };
+  currentSeason: { season: string; year: string; sfw: boolean };
   currentSearch: {
     query: string;
     rating: string;
@@ -29,7 +29,7 @@ export default function Sidebar({
     startDate: string;
     type: string;
     status: string;
-    sfw: boolean | null;
+    sfw: boolean;
   };
   clearFilters: () => void; // Added prop type
 }) {
@@ -52,7 +52,7 @@ export default function Sidebar({
   useEffect(() => {
     setSeason(currentSeason.season || "");
     setYear(currentSeason.year || "");
-    setSfw(currentSeason.sfw !== null ? currentSeason.sfw : true);
+    setSfw(currentSeason.sfw || true);
   }, [currentSeason]);
 
   useEffect(() => {
@@ -63,7 +63,7 @@ export default function Sidebar({
     setStartDate(currentSearch.startDate || "");
     setType(currentSearch.type || "");
     setStatus(currentSearch.status || "");
-    setSfwSearch(currentSearch.sfw !== null ? currentSearch.sfw : true);
+    setSfwSearch(currentSearch.sfw || true);
   }, [currentSearch]);
 
   const handleSubmitSeason = (e: React.FormEvent<HTMLFormElement>) => {
