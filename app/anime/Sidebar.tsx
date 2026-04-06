@@ -286,7 +286,6 @@ export default function Sidebar({
                 id="sfw"
                 checked={sfwSearch}
                 onChange={(e) => {
-                  console.log("SFW Checkbox changed:", e.target.checked);
                   setSfwSearch(e.target.checked);
                 }}
                 className="w-4 h-4 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500 focus:ring-2 cursor-pointer"

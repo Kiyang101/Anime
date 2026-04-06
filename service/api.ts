@@ -25,9 +25,6 @@ export default function useAnimeAPI() {
     options?: { signal?: AbortSignal },
   ) => {
     try {
-      console.log(
-        `Fetching season ${season} ${year}, page ${page}, sfw: ${sfw}, filter: ${filter}`,
-      );
       const response = await axios.get(
         `https://api.jikan.moe/v4/seasons/${year}/${season}?page=${page}&unapproved=true${sfw ? `&sfw` : ""}&filter=${filter}`,
         { signal: options?.signal }, // Pass signal to axios

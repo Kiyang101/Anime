@@ -17,13 +17,13 @@ export default function Navbar() {
             href="/anime"
             className="rounded-lg px-4 py-2 text-base font-medium text-gray-300 transition-all hover:bg-gray-800 hover:text-white"
           >
-            Season Now
+            Anime Search
           </Link>
           <Link
             href="/upcoming"
             className="rounded-lg px-4 py-2 text-base font-medium text-gray-300 transition-all hover:bg-gray-800 hover:text-white"
           >
-            Season Upcoming
+            Character Search
           </Link>
         </div>
       </div>
