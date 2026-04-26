@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import useAnimeAPI from "@/service/api";
 
@@ -439,7 +440,7 @@ export default function Page() {
               ) : selectedCharacter ? (
                 <div className="flex flex-col md:flex-row gap-8 max-h-full">
                   {/* Character Image */}
-                  <div className="w-full md:w-[250px] shrink-0 sticky top-0 self-start">
+                  <div className="w-full md:w-[250px] shrink-0 sticky top-0 self-start flex flex-col gap-3">
                     <div className="relative aspect-[3/4] w-full rounded-xl overflow-hidden shadow-lg border border-gray-700">
                       <Image
                         src={selectedCharacter.images.jpg.image_url}
@@ -448,6 +449,12 @@ export default function Page() {
                         className="object-cover"
                       />
                     </div>
+                    <Link
+                      href={`/characters/${selectedCharacter.mal_id}`}
+                      className="text-sm text-blue-400 hover:text-blue-300 font-semibold transition-colors"
+                    >
+                      See full details →
+                    </Link>
                   </div>
 
                   {/* Character Info */}

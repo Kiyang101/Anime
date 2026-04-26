@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import useAnimeAPI from "@/service/api";
 
@@ -41,14 +42,34 @@ interface MangaCharacter {
   role: string;
 }
 
+interface CharacterFullDetails {
+  mal_id: number;
+  name: string;
+  name_kanji: string;
+  about: string;
+
+  images: { jpg: { image_url: string } };
+  voices: {
+    language: string;
+    person: {
+      name: string;
+      images: { jpg: { image_url: string } };
+    };
+  }[];
+}
+
 export default function Page() {
   const { id } = useParams();
   const router = useRouter();
-  const { getMangaById, getMangaCharacters } = useAnimeAPI();
+  const { getMangaById, getMangaCharacters, getCharacterFullById } = useAnimeAPI();
 
   const [manga, setManga] = useState<MangaDetails | null>(null);
   const [characters, setCharacters] = useState<MangaCharacter[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const [selectedCharacter, setSelectedCharacter] = useState<CharacterFullDetails | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [charLoading, setCharLoading] = useState(false);
 
   useEffect(() => {
     // 1. Add a flag to prevent race conditions and memory leaks
@@ -90,6 +111,24 @@ export default function Page() {
       isMounted = false;
     };
   }, [id]);
+
+  const handleCharacterClick = async (charId: number) => {
+    setIsModalOpen(true);
+    setCharLoading(true);
+    try {
+      const result = await getCharacterFullById(String(charId));
+      setSelectedCharacter(result.data);
+    } catch (error) {
+      console.error("Failed to fetch character details:", error);
+    } finally {
+      setCharLoading(false);
+    }
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedCharacter(null);
+  };
 
   const tagPill = (label: string, key: number | string) => (
     <span
@@ -336,9 +375,10 @@ export default function Page() {
               {characters.map(({ character, role }) => (
                 <div
                   key={character.mal_id}
-                  className="flex flex-col items-center group"
+                  onClick={() => handleCharacterClick(character.mal_id)}
+                  className="group cursor-pointer flex flex-col items-center"
                 >
-                  <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden shadow-lg border border-gray-800 transition-all duration-300 group-hover:scale-105 group-hover:shadow-blue-500/20 group-hover:shadow-2xl">
+                  <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden shadow-lg border border-gray-800 transition-all duration-300 group-hover:scale-105 group-hover:border-blue-500/50 group-hover:shadow-blue-500/20 group-hover:shadow-2xl">
                     <Image
                       src={character.images.jpg.image_url}
                       alt={character.name}
@@ -381,6 +421,107 @@ export default function Page() {
           </section>
         )}
       </div>
+
+      {/* Character Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl relative">
+            <div className="sticky top-0 bg-gray-900/90 backdrop-blur border-b rounded-t-2xl border-gray-800 p-4 flex justify-between items-center z-10">
+              <h3 className="text-xl font-bold text-white">Character Details</h3>
+              <button
+                type="button"
+                onClick={closeModal}
+                className="p-2 text-gray-400 hover:text-white bg-gray-800 hover:bg-gray-700 rounded-full transition-colors px-3 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-6 max-h-full overflow-y-auto custom-scrollbar">
+              {charLoading ? (
+                <div className="flex flex-col items-center justify-center py-20">
+                  <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4" />
+                  <p className="text-gray-400">Loading character info...</p>
+                </div>
+              ) : selectedCharacter ? (
+                <div className="flex flex-col md:flex-row gap-8">
+                  <div className="w-full md:w-[250px] shrink-0 sticky top-0 self-start flex flex-col gap-3">
+                    <div className="relative aspect-[3/4] w-full rounded-xl overflow-hidden shadow-lg border border-gray-700">
+                      <Image
+                        src={selectedCharacter.images.jpg.image_url}
+                        alt={selectedCharacter.name}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <Link
+                      href={`/characters/${selectedCharacter.mal_id}`}
+                      className="text-sm text-blue-400 hover:text-blue-300 font-semibold transition-colors"
+                    >
+                      See full details →
+                    </Link>
+                  </div>
+
+                  <div className="flex-1">
+                    <h2 className="text-3xl font-bold text-white mb-1">
+                      {selectedCharacter.name}
+                    </h2>
+                    {selectedCharacter.name_kanji && (
+                      <h3 className="text-xl text-gray-500 mb-6">
+                        {selectedCharacter.name_kanji}
+                      </h3>
+                    )}
+
+                    <div className="mb-8">
+                      <h4 className="text-lg font-bold text-white border-b border-gray-800 pb-2 mb-3">
+                        About
+                      </h4>
+                      <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-line">
+                        {selectedCharacter.about || "No details available."}
+                      </p>
+                    </div>
+
+                    {selectedCharacter.voices && selectedCharacter.voices.length > 0 && (
+                      <div>
+                        <h4 className="text-lg font-bold text-white border-b border-gray-800 pb-2 mb-4">
+                          Voice Actors
+                        </h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {selectedCharacter.voices.map((va, idx) => (
+                            <div
+                              key={idx}
+                              className="flex items-center gap-3 bg-gray-800/50 p-2 rounded-lg border border-gray-700/50"
+                            >
+                              <div className="relative w-12 h-12 rounded-full overflow-hidden shrink-0">
+                                <Image
+                                  src={va.person.images.jpg.image_url}
+                                  alt={va.person.name}
+                                  fill
+                                  className="object-cover"
+                                />
+                              </div>
+                              <div>
+                                <p className="text-sm font-bold text-gray-200">
+                                  {va.person.name}
+                                </p>
+                                <p className="text-xs text-gray-500">{va.language}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-10 text-gray-500">
+                  Failed to load character.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
