@@ -1,4 +1,10 @@
 import { useState, useEffect } from "react";
+import useAnimeAPI from "@/service/api";
+
+interface Genre {
+  mal_id: number;
+  name: string;
+}
 
 export default function Sidebar({
   className,
@@ -15,6 +21,7 @@ export default function Sidebar({
     sort: string,
     startDate: string,
     sfw: boolean,
+    genres: string,
   ) => void;
   currentSearch: {
     query: string;
@@ -24,19 +31,31 @@ export default function Sidebar({
     sort: string;
     startDate: string;
     sfw: boolean;
+    genres: string;
   };
   clearFilters: () => void;
 }) {
+  const { getMangaGenres } = useAnimeAPI();
+
   const [query, setQuery] = useState(currentSearch.query || "");
   const [type, setType] = useState(currentSearch.type || "");
   const [status, setStatus] = useState(currentSearch.status || "");
   const [orderBy, setOrderBy] = useState(currentSearch.orderBy || "");
   const [sort, setSort] = useState(currentSearch.sort || "");
   const [startDate, setStartDate] = useState(currentSearch.startDate || "");
-  const [sfwSearch, setSfwSearch] = useState<boolean>(
-    currentSearch.sfw ?? true,
+  const [sfwSearch, setSfwSearch] = useState<boolean>(currentSearch.sfw ?? true);
+  const [selectedGenres, setSelectedGenres] = useState<number[]>(
+    currentSearch.genres ? currentSearch.genres.split(",").map(Number) : [],
   );
+
+  const [genreList, setGenreList] = useState<Genre[]>([]);
+  const [genreFilter, setGenreFilter] = useState("");
+  const [genresExpanded, setGenresExpanded] = useState(true);
   const [formResetKey, setFormResetKey] = useState(0);
+
+  useEffect(() => {
+    getMangaGenres().then(setGenreList);
+  }, []);
 
   useEffect(() => {
     setQuery(currentSearch.query || "");
@@ -46,12 +65,27 @@ export default function Sidebar({
     setSort(currentSearch.sort || "");
     setStartDate(currentSearch.startDate || "");
     setSfwSearch(currentSearch.sfw ?? true);
+    setSelectedGenres(
+      currentSearch.genres ? currentSearch.genres.split(",").map(Number) : [],
+    );
   }, [currentSearch]);
 
   const handleClear = () => {
     clearFilters();
+    setSelectedGenres([]);
+    setGenreFilter("");
     setFormResetKey((prev) => prev + 1);
   };
+
+  const toggleGenre = (id: number) => {
+    setSelectedGenres((prev) =>
+      prev.includes(id) ? prev.filter((g) => g !== id) : [...prev, id],
+    );
+  };
+
+  const filteredGenres = genreList.filter((g) =>
+    g.name.toLowerCase().includes(genreFilter.toLowerCase()),
+  );
 
   const inputStyles =
     "w-full mt-1 bg-gray-800 border border-gray-700 text-white text-sm rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent block px-3 py-2 transition-all outline-none placeholder-gray-500";
@@ -86,6 +120,7 @@ export default function Sidebar({
                   ? `${formData.get("startDate")}-01-01`
                   : "",
                 formData.get("sfw") === "on",
+                selectedGenres.join(","),
               );
             }}
             className="flex flex-col gap-4"
@@ -203,6 +238,78 @@ export default function Sidebar({
                 <option value="asc">Ascending</option>
                 <option value="desc">Descending</option>
               </select>
+            </div>
+
+            {/* --- GENRES --- */}
+            <div>
+              <button
+                type="button"
+                onClick={() => setGenresExpanded((v) => !v)}
+                className="w-full flex items-center justify-between text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-white transition-colors"
+              >
+                <span>
+                  Genres
+                  {selectedGenres.length > 0 && (
+                    <span className="ml-2 px-1.5 py-0.5 bg-blue-600 text-white text-[10px] rounded-full font-bold">
+                      {selectedGenres.length}
+                    </span>
+                  )}
+                </span>
+                <svg
+                  className={`w-4 h-4 transition-transform ${genresExpanded ? "rotate-180" : ""}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {genresExpanded && (
+                <div className="mt-2 bg-gray-800 border border-gray-700 rounded-md overflow-hidden">
+                  <div className="p-2 border-b border-gray-700">
+                    <input
+                      type="text"
+                      value={genreFilter}
+                      onChange={(e) => setGenreFilter(e.target.value)}
+                      placeholder="Filter genres..."
+                      className="w-full bg-gray-700 border border-gray-600 text-white text-xs rounded px-2 py-1.5 outline-none placeholder-gray-500 focus:ring-1 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div className="max-h-48 overflow-y-auto custom-scrollbar">
+                    {filteredGenres.map((genre) => (
+                      <label
+                        key={genre.mal_id}
+                        className="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-700 cursor-pointer transition-colors"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedGenres.includes(genre.mal_id)}
+                          onChange={() => toggleGenre(genre.mal_id)}
+                          className="w-3.5 h-3.5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 cursor-pointer"
+                        />
+                        <span className="text-xs text-gray-300 select-none">
+                          {genre.name}
+                        </span>
+                      </label>
+                    ))}
+                    {filteredGenres.length === 0 && (
+                      <p className="px-3 py-3 text-xs text-gray-500 text-center">No genres found</p>
+                    )}
+                  </div>
+                  {selectedGenres.length > 0 && (
+                    <div className="p-2 border-t border-gray-700">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedGenres([])}
+                        className="w-full text-xs text-gray-400 hover:text-white transition-colors text-center"
+                      >
+                        Clear genres
+      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-3 bg-gray-800 p-3 rounded-md border border-gray-700">

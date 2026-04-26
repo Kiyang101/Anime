@@ -44,6 +44,7 @@ const defaultSearch = {
   sort: "",
   startDate: "",
   sfw: true,
+  genres: "",
 };
 
 export default function Page() {
@@ -77,8 +78,9 @@ export default function Page() {
     sort: string,
     startDate: string,
     sfw: boolean,
+    genres: string,
   ) => {
-    setSearchParamsState({ query, type, status, orderBy, sort, startDate, sfw });
+    setSearchParamsState({ query, type, status, orderBy, sort, startDate, sfw, genres });
     setPage(1);
   };
 

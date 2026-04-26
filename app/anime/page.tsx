@@ -53,6 +53,7 @@ export default function Page() {
     type: "",
     status: "",
     sfw: true,
+    genres: "",
   });
 
   // 2. Restore state — URL params (from landing page "View All") take priority over sessionStorage
@@ -119,6 +120,7 @@ export default function Page() {
       type: "",
       status: "",
       sfw: true,
+      genres: "",
     });
     setSeasonData({ season: newSeason, year: newYear, sfw: newSfw });
     setPage(1);
@@ -133,6 +135,7 @@ export default function Page() {
     newType: string,
     newStatus: string,
     newSfw: boolean,
+    newGenres: string,
   ) => {
     setSeasonData({ season: "", year: "", sfw: true });
     setSearchParamsState({
@@ -144,6 +147,7 @@ export default function Page() {
       type: newType,
       status: newStatus,
       sfw: newSfw,
+      genres: newGenres,
     });
     setPage(1);
   };
@@ -267,6 +271,7 @@ export default function Page() {
       type: "",
       status: "",
       sfw: true,
+      genres: "",
     });
     setPage(1);
   };

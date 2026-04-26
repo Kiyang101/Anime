@@ -10,6 +10,7 @@ interface SearchAnimeParams {
   type?: string;
   status?: string;
   sfw?: boolean;
+  genres?: string;
   signal?: AbortSignal;
 }
 
@@ -30,6 +31,7 @@ interface SearchMangaParams {
   sort?: string;
   startDate?: string;
   sfw?: boolean;
+  genres?: string;
   signal?: AbortSignal;
 }
 
@@ -99,6 +101,7 @@ export default function useAnimeAPI() {
       if (params.status) queryParams.append("status", params.status);
       if (params.sfw !== undefined)
         queryParams.append("sfw", params.sfw.toString());
+      if (params.genres) queryParams.append("genres", params.genres);
 
       const response = await axios.get(
         `https://api.jikan.moe/v4/anime?${queryParams.toString()}`,
@@ -181,6 +184,7 @@ export default function useAnimeAPI() {
       if (params.startDate) queryParams.append("start_date", params.startDate);
       if (params.sfw !== undefined)
         queryParams.append("sfw", params.sfw.toString());
+      if (params.genres) queryParams.append("genres", params.genres);
 
       const response = await axios.get(
         `https://api.jikan.moe/v4/manga?${queryParams.toString()}`,
@@ -224,6 +228,62 @@ export default function useAnimeAPI() {
     }
   };
 
+  const getAnimeRecommendations = async () => {
+    try {
+      const response = await axios.get(
+        `https://api.jikan.moe/v4/recommendations/anime`,
+      );
+      return response.data.data as {
+        mal_id: string;
+        entry: { mal_id: number; title: string; images: { jpg: { large_image_url: string } } }[];
+        content: string;
+        user: { username: string };
+      }[];
+    } catch (error) {
+      console.error("Error fetching anime recommendations:", error);
+      return [];
+    }
+  };
+
+  const getMangaRecommendations = async () => {
+    try {
+      const response = await axios.get(
+        `https://api.jikan.moe/v4/recommendations/manga`,
+      );
+      return response.data.data as {
+        mal_id: string;
+        entry: { mal_id: number; title: string; images: { jpg: { large_image_url: string } } }[];
+        content: string;
+        user: { username: string };
+      }[];
+    } catch (error) {
+      console.error("Error fetching manga recommendations:", error);
+      return [];
+    }
+  };
+
+  const getAnimeGenres = async () => {
+    try {
+      const response = await axios.get(`https://api.jikan.moe/v4/genres/anime`);
+      const data = response.data.data as { mal_id: number; name: string }[];
+      return Array.from(new Map(data.map((g) => [g.mal_id, g])).values());
+    } catch (error) {
+      console.error("Error fetching anime genres:", error);
+      return [];
+    }
+  };
+
+  const getMangaGenres = async () => {
+    try {
+      const response = await axios.get(`https://api.jikan.moe/v4/genres/manga`);
+      const data = response.data.data as { mal_id: number; name: string }[];
+      return Array.from(new Map(data.map((g) => [g.mal_id, g])).values());
+    } catch (error) {
+      console.error("Error fetching manga genres:", error);
+      return [];
+    }
+  };
+
   return {
     getAnimeSeason,
     getAnimeSeasonNow,
@@ -235,5 +295,9 @@ export default function useAnimeAPI() {
     getMangaSearch,
     getMangaById,
     getMangaCharacters,
+    getAnimeGenres,
+    getMangaGenres,
+    getAnimeRecommendations,
+    getMangaRecommendations,
   };
 }

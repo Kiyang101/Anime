@@ -2,12 +2,19 @@ import Image from "next/image";
 import Link from "next/link";
 import HeroCarousel, { HeroAnime } from "@/components/HeroCarousel";
 import ClearSessionLink from "@/components/ClearSessionLink";
+import RecommendationRow from "@/components/RecommendationRow";
 import useAnimeAPI from "@/service/api";
 
 // Cache the rendered page for 1 hour — API calls happen at most once per hour in production
 export const revalidate = 3600;
 
-const { getAnimeSeasonNow, getAnimeSearch, getAnimeSeason } = useAnimeAPI();
+const {
+  getAnimeSeasonNow,
+  getAnimeSearch,
+  getAnimeSeason,
+  getAnimeRecommendations,
+  getMangaRecommendations,
+} = useAnimeAPI();
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -139,6 +146,14 @@ export default async function Home() {
   const lastSeason = await safe(() =>
     getAnimeSeason(prevSeason, String(prevYear), 1, "tv", true),
   );
+  await sleep(400);
+  const animeRecs = await (async () => {
+    try { return (await getAnimeRecommendations()).slice(0, 12); } catch { return []; }
+  })();
+  await sleep(400);
+  const mangaRecs = await (async () => {
+    try { return (await getMangaRecommendations()).slice(0, 12); } catch { return []; }
+  })();
 
   const heroItems: HeroAnime[] = nowData.slice(0, 5).map((a) => ({
     mal_id: a.mal_id,
@@ -206,6 +221,17 @@ export default async function Home() {
           title={`📺 Last Season (${prevSeasonLabel})`}
           anime={lastSeason.slice(0, 8)}
           href={`/anime?season=${prevSeason}&year=${prevYear}`}
+        />
+
+        <RecommendationRow
+          title="💡 Anime Recommendations"
+          recs={animeRecs}
+          basePath="/anime"
+        />
+        <RecommendationRow
+          title="📖 Manga Recommendations"
+          recs={mangaRecs}
+          basePath="/manga"
         />
 
         {/* Explore CTAs */}

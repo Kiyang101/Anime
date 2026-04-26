@@ -15,6 +15,7 @@ export interface Anime {
   synopsis?: string;
   genres?: { mal_id: number; name: string }[];
   studios?: { name: string }[];
+  images?: { jpg: { large_image_url: string } };
 }
 
 export default function Popup({
@@ -58,7 +59,8 @@ export default function Popup({
         ${isLeft ? "right-full mr-2" : "left-full ml-2"}`}
     >
       {/* 3. The rich UI for the Anime Data */}
-      <div className="backdrop-blur-xl bg-black/80 px-5 py-4 rounded-lg text-white text-shadow-lg max-w-[275px] w-[275px] min-h-[300px] flex flex-col gap-2 border border-gray-700">
+      <div className="backdrop-blur-xl bg-black/80 rounded-lg text-white text-shadow-lg max-w-[275px] w-[275px] flex flex-col gap-2 border border-gray-700 overflow-hidden">
+        <div className="px-5 py-4 flex flex-col gap-2">
         {/* TITLE */}
         <h2 className="text-lg font-bold leading-tight">
           {data.title_english || data.title}
@@ -112,6 +114,7 @@ export default function Popup({
             Studio: {data.studios[0].name}
           </div>
         )}
+        </div>
       </div>
     </div>
   );

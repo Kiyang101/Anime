@@ -1,4 +1,10 @@
 import { useState, useEffect } from "react";
+import useAnimeAPI from "@/service/api";
+
+interface Genre {
+  mal_id: number;
+  name: string;
+}
 
 export default function Sidebar({
   className,
@@ -6,7 +12,7 @@ export default function Sidebar({
   setSearchParams,
   currentSeason,
   currentSearch,
-  clearFilters, // Added prop
+  clearFilters,
 }: {
   className?: string;
   setSeasons: (season: string, year: string, sfw: boolean) => void;
@@ -19,6 +25,7 @@ export default function Sidebar({
     type: string,
     status: string,
     sfw: boolean,
+    genres: string,
   ) => void;
   currentSeason: { season: string; year: string; sfw: boolean };
   currentSearch: {
@@ -30,9 +37,12 @@ export default function Sidebar({
     type: string;
     status: string;
     sfw: boolean;
+    genres: string;
   };
-  clearFilters: () => void; // Added prop type
+  clearFilters: () => void;
 }) {
+  const { getAnimeGenres } = useAnimeAPI();
+
   const [season, setSeason] = useState(currentSeason.season || "");
   const [year, setYear] = useState(currentSeason.year || "");
   const [sfw, setSfw] = useState<boolean>(currentSeason.sfw ?? true);
@@ -44,17 +54,24 @@ export default function Sidebar({
   const [startDate, setStartDate] = useState(currentSearch.startDate || "");
   const [type, setType] = useState(currentSearch.type || "");
   const [status, setStatus] = useState(currentSearch.status || "");
-  const [sfwSearch, setSfwSearch] = useState<boolean>(
-    currentSearch.sfw ?? true,
+  const [sfwSearch, setSfwSearch] = useState<boolean>(currentSearch.sfw ?? true);
+  const [selectedGenres, setSelectedGenres] = useState<number[]>(
+    currentSearch.genres ? currentSearch.genres.split(",").map(Number) : [],
   );
 
-  // We use this to force the uncontrolled search form to remount and empty out when cleared
+  const [genreList, setGenreList] = useState<Genre[]>([]);
+  const [genreFilter, setGenreFilter] = useState("");
+  const [genresExpanded, setGenresExpanded] = useState(true);
   const [formResetKey, setFormResetKey] = useState(0);
+
+  useEffect(() => {
+    getAnimeGenres().then(setGenreList);
+  }, []);
 
   useEffect(() => {
     setSeason(currentSeason.season || "");
     setYear(currentSeason.year || "");
-    setSfw(currentSeason.sfw || true);
+    setSfw(currentSeason.sfw ?? true);
   }, [currentSeason]);
 
   useEffect(() => {
@@ -65,7 +82,10 @@ export default function Sidebar({
     setStartDate(currentSearch.startDate || "");
     setType(currentSearch.type || "");
     setStatus(currentSearch.status || "");
-    setSfwSearch(currentSearch.sfw || true);
+    setSfwSearch(currentSearch.sfw ?? true);
+    setSelectedGenres(
+      currentSearch.genres ? currentSearch.genres.split(",").map(Number) : [],
+    );
   }, [currentSearch]);
 
   const handleSubmitSeason = (e: React.FormEvent<HTMLFormElement>) => {
@@ -73,19 +93,21 @@ export default function Sidebar({
     const formData = new FormData(e.currentTarget);
     const formYear = formData.get("year") as string;
     const formSeason = formData.get("season") as string;
-    const sfw = formData.get("sfwSeason") === "on";
+    const sfwVal = formData.get("sfwSeason") === "on";
 
     if (!formYear || !formSeason) {
       alert("Please fill in both fields.");
       return;
     }
 
-    setSeasons(formSeason, formYear, sfw);
+    setSeasons(formSeason, formYear, sfwVal);
   };
 
   const handleClearSearch = () => {
     clearFilters();
-    setFormResetKey((prev) => prev + 1); // Forces the search form to clear its fields
+    setSelectedGenres([]);
+    setGenreFilter("");
+    setFormResetKey((prev) => prev + 1);
   };
 
   const handleClearSeason = () => {
@@ -94,13 +116,20 @@ export default function Sidebar({
     clearFilters();
   };
 
+  const toggleGenre = (id: number) => {
+    setSelectedGenres((prev) =>
+      prev.includes(id) ? prev.filter((g) => g !== id) : [...prev, id],
+    );
+  };
+
+  const filteredGenres = genreList.filter((g) =>
+    g.name.toLowerCase().includes(genreFilter.toLowerCase()),
+  );
+
   const inputStyles =
     "w-full mt-1 bg-gray-800 border border-gray-700 text-white text-sm rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent block px-3 py-2 transition-all outline-none placeholder-gray-500";
   const labelStyles =
     "block text-xs font-semibold text-gray-400 uppercase tracking-wider";
-
-  // console.log("Rendering Sidebar with currentSeason:", currentSeason);
-  // console.log("Rendering Sidebar with currentSearch:", currentSearch);
 
   return (
     <aside
@@ -117,33 +146,33 @@ export default function Sidebar({
           </div>
 
           <form
-            key={formResetKey} // Attached key here to allow forced resets
+            key={formResetKey}
             onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
-              const query = formData.get("query") as string;
-              const rating = formData.get("rating") as string;
-              const orderBy = formData.get("orderBy") as string;
-              const sort = formData.get("sort") as string;
-              const startDate = formData.get("startDate") as string;
-              const type = formData.get("type") as string;
-              const status = formData.get("status") as string;
-              const sfw = formData.get("sfw") === "on";
+              const q = formData.get("query") as string;
+              const r = formData.get("rating") as string;
+              const ob = formData.get("orderBy") as string;
+              const s = formData.get("sort") as string;
+              const sd = formData.get("startDate") as string;
+              const t = formData.get("type") as string;
+              const st = formData.get("status") as string;
+              const sfwVal = formData.get("sfw") === "on";
 
               setSearchParams(
-                query || "",
-                rating || "",
-                orderBy || "",
-                sort || "",
-                startDate ? `${startDate}-01-01` : "",
-                type || "",
-                status || "",
-                sfw,
+                q || "",
+                r || "",
+                ob || "",
+                s || "",
+                sd ? `${sd}-01-01` : "",
+                t || "",
+                st || "",
+                sfwVal,
+                selectedGenres.join(","),
               );
             }}
             className="flex flex-col gap-4"
           >
-            {/* ... (All the inputs inside the search form stay exactly the same) ... */}
             <div>
               <label htmlFor="query" className={labelStyles}>
                 Search
@@ -279,15 +308,85 @@ export default function Sidebar({
               </select>
             </div>
 
+            {/* --- GENRES --- */}
+            <div>
+              <button
+                type="button"
+                onClick={() => setGenresExpanded((v) => !v)}
+                className="w-full flex items-center justify-between text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-white transition-colors"
+              >
+                <span>
+                  Genres
+                  {selectedGenres.length > 0 && (
+                    <span className="ml-2 px-1.5 py-0.5 bg-blue-600 text-white text-[10px] rounded-full font-bold">
+                      {selectedGenres.length}
+                    </span>
+                  )}
+                </span>
+                <svg
+                  className={`w-4 h-4 transition-transform ${genresExpanded ? "rotate-180" : ""}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {genresExpanded && (
+                <div className="mt-2 bg-gray-800 border border-gray-700 rounded-md overflow-hidden">
+                  <div className="p-2 border-b border-gray-700">
+                    <input
+                      type="text"
+                      value={genreFilter}
+                      onChange={(e) => setGenreFilter(e.target.value)}
+                      placeholder="Filter genres..."
+                      className="w-full bg-gray-700 border border-gray-600 text-white text-xs rounded px-2 py-1.5 outline-none placeholder-gray-500 focus:ring-1 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div className="max-h-48 overflow-y-auto custom-scrollbar">
+                    {filteredGenres.map((genre) => (
+                      <label
+                        key={genre.mal_id}
+                        className="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-700 cursor-pointer transition-colors"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedGenres.includes(genre.mal_id)}
+                          onChange={() => toggleGenre(genre.mal_id)}
+                          className="w-3.5 h-3.5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 cursor-pointer"
+                        />
+                        <span className="text-xs text-gray-300 select-none">
+                          {genre.name}
+                        </span>
+                      </label>
+                    ))}
+                    {filteredGenres.length === 0 && (
+                      <p className="px-3 py-3 text-xs text-gray-500 text-center">No genres found</p>
+                    )}
+                  </div>
+                  {selectedGenres.length > 0 && (
+                    <div className="p-2 border-t border-gray-700">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedGenres([])}
+                        className="w-full text-xs text-gray-400 hover:text-white transition-colors text-center"
+                      >
+                        Clear genres
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             <div className="flex items-center gap-3 bg-gray-800 p-3 rounded-md border border-gray-700">
               <input
                 type="checkbox"
                 name="sfw"
                 id="sfw"
                 checked={sfwSearch}
-                onChange={(e) => {
-                  setSfwSearch(e.target.checked);
-                }}
+                onChange={(e) => setSfwSearch(e.target.checked)}
                 className="w-4 h-4 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500 focus:ring-2 cursor-pointer"
               />
               <label
@@ -298,7 +397,6 @@ export default function Sidebar({
               </label>
             </div>
 
-            {/* Split into Apply and Clear Buttons */}
             <div className="flex gap-2 mt-2">
               <button
                 type="submit"
@@ -373,9 +471,7 @@ export default function Sidebar({
                   name="sfwSeason"
                   id="sfwSeason"
                   checked={sfw}
-                  onChange={(e) => {
-                    setSfw(e.target.checked);
-                  }}
+                  onChange={(e) => setSfw(e.target.checked)}
                   className="w-4 h-4 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500 focus:ring-2 cursor-pointer"
                 />
                 <span className="text-sm font-medium text-white">
@@ -384,7 +480,6 @@ export default function Sidebar({
               </label>
             </div>
 
-            {/* Split into Search and Clear Buttons */}
             <div className="flex gap-2 mt-2">
               <button
                 type="submit"
