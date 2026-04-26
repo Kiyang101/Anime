@@ -3,12 +3,26 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { Analytics } from "@vercel/analytics/next";
 
+const siteUrl = "https://anime-alpha-drab.vercel.app";
+
 export const metadata: Metadata = {
   title: {
     default: "Anime Explorer",
     template: "%s | Anime Explorer",
   },
   description: "Browse and search anime, manga, and characters powered by the MyAnimeList database.",
+  openGraph: {
+    type: "website",
+    siteName: "Anime Explorer",
+    title: "Anime Explorer",
+    description: "Browse and search anime, manga, and characters powered by the MyAnimeList database.",
+    url: siteUrl,
+  },
+  twitter: {
+    card: "summary",
+    title: "Anime Explorer",
+    description: "Browse and search anime, manga, and characters powered by the MyAnimeList database.",
+  },
 };
 
 export default function RootLayout({
