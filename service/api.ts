@@ -148,7 +148,8 @@ export default function useAnimeAPI() {
       if (params.query) queryParams.append("q", params.query);
       if (params.orderBy) queryParams.append("order_by", params.orderBy);
       if (params.sort) queryParams.append("sort", params.sort);
-      if (params.page !== undefined) queryParams.append("page", params.page.toString());
+      if (params.page !== undefined)
+        queryParams.append("page", params.page.toString());
 
       const response = await axios.get(
         `https://api.jikan.moe/v4/characters?${queryParams.toString()}`,

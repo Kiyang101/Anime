@@ -51,28 +51,45 @@ export default function Page() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // 1. Add a flag to prevent race conditions and memory leaks
+    let isMounted = true;
+
     const fetchData = async () => {
-      if (!id) return;
+      // 2. Safely extract the ID, handling potential array structures from routers
       const mangaId = Array.isArray(id) ? id[0] : id;
       if (!mangaId) return;
 
       setIsLoading(true);
+
       try {
         const [mangaRes, charsRes] = await Promise.all([
           getMangaById(mangaId),
           getMangaCharacters(mangaId),
         ]);
-        setManga(mangaRes.data);
-        setCharacters(charsRes.data ?? []);
+
+        // 3. Only update state if the component is still mounted and
+        // the ID hasn't changed while we were fetching
+        if (isMounted) {
+          setManga(mangaRes.data);
+          setCharacters(charsRes.data ?? []);
+        }
       } catch (error) {
         console.error("Error fetching manga details:", error);
+        // Optional: Add a setError(error) here to show UI feedback
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
     fetchData();
-  }, [id, getMangaById, getMangaCharacters]);
+
+    // 4. Cleanup function runs when `id` changes or component unmounts
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
 
   const tagPill = (label: string, key: number | string) => (
     <span
@@ -119,8 +136,18 @@ export default function Page() {
           onClick={() => router.back()}
           className="mb-8 flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors cursor-pointer"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
           Back
         </button>
@@ -138,38 +165,60 @@ export default function Page() {
           </div>
 
           <div className="flex-1">
-            <h1 className="text-3xl font-extrabold text-white mb-1">{manga.title}</h1>
+            <h1 className="text-3xl font-extrabold text-white mb-1">
+              {manga.title}
+            </h1>
             {manga.title_english && manga.title_english !== manga.title && (
-              <p className="text-lg text-gray-400 mb-1">{manga.title_english}</p>
+              <p className="text-lg text-gray-400 mb-1">
+                {manga.title_english}
+              </p>
             )}
             {manga.title_japanese && (
-              <p className="text-base text-gray-500 mb-4">{manga.title_japanese}</p>
+              <p className="text-base text-gray-500 mb-4">
+                {manga.title_japanese}
+              </p>
             )}
 
             {/* Stat pills */}
             <div className="flex flex-wrap gap-3 mb-6">
               {manga.score != null && (
                 <div className="flex flex-col items-center bg-gray-800/80 border border-gray-700 rounded-xl px-4 py-2 min-w-[64px]">
-                  <span className="text-yellow-400 text-lg font-bold">★ {manga.score}</span>
-                  <span className="text-gray-500 text-[10px] uppercase tracking-wider">Score</span>
+                  <span className="text-yellow-400 text-lg font-bold">
+                    ★ {manga.score}
+                  </span>
+                  <span className="text-gray-500 text-[10px] uppercase tracking-wider">
+                    Score
+                  </span>
                 </div>
               )}
               {manga.rank != null && (
                 <div className="flex flex-col items-center bg-gray-800/80 border border-gray-700 rounded-xl px-4 py-2 min-w-[64px]">
-                  <span className="text-white text-lg font-bold">#{manga.rank}</span>
-                  <span className="text-gray-500 text-[10px] uppercase tracking-wider">Rank</span>
+                  <span className="text-white text-lg font-bold">
+                    #{manga.rank}
+                  </span>
+                  <span className="text-gray-500 text-[10px] uppercase tracking-wider">
+                    Rank
+                  </span>
                 </div>
               )}
               {manga.popularity != null && (
                 <div className="flex flex-col items-center bg-gray-800/80 border border-gray-700 rounded-xl px-4 py-2 min-w-[64px]">
-                  <span className="text-white text-lg font-bold">#{manga.popularity}</span>
-                  <span className="text-gray-500 text-[10px] uppercase tracking-wider">Popularity</span>
+                  <span className="text-white text-lg font-bold">
+                    #{manga.popularity}
+                  </span>
+                  <span className="text-gray-500 text-[10px] uppercase tracking-wider">
+                    Popularity
+                  </span>
                 </div>
               )}
               {manga.favorites != null && (
                 <div className="flex flex-col items-center bg-gray-800/80 border border-gray-700 rounded-xl px-4 py-2 min-w-[64px]">
-                  <span className="text-white text-lg font-bold">{manga.favorites.toLocaleString()}</span>
-                  <span className="text-gray-500 text-[10px] uppercase tracking-wider">Favorites</span>
+                  <span className="text-white text-lg font-bold">
+                    {manga.favorites.toLocaleString()}
+                  </span>
+                  <span className="text-gray-500 text-[10px] uppercase tracking-wider">
+                    Favorites
+                  </span>
                 </div>
               )}
             </div>
@@ -177,34 +226,56 @@ export default function Page() {
             {/* Info grid */}
             <dl className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-3 text-sm mb-6">
               <div>
-                <dt className="text-gray-500 text-xs uppercase tracking-wider">Type</dt>
-                <dd className="text-gray-200 font-medium mt-0.5">{manga.type}</dd>
+                <dt className="text-gray-500 text-xs uppercase tracking-wider">
+                  Type
+                </dt>
+                <dd className="text-gray-200 font-medium mt-0.5">
+                  {manga.type}
+                </dd>
               </div>
               <div>
-                <dt className="text-gray-500 text-xs uppercase tracking-wider">Status</dt>
-                <dd className="text-gray-200 font-medium mt-0.5">{manga.status}</dd>
+                <dt className="text-gray-500 text-xs uppercase tracking-wider">
+                  Status
+                </dt>
+                <dd className="text-gray-200 font-medium mt-0.5">
+                  {manga.status}
+                </dd>
               </div>
               {manga.chapters != null && (
                 <div>
-                  <dt className="text-gray-500 text-xs uppercase tracking-wider">Chapters</dt>
-                  <dd className="text-gray-200 font-medium mt-0.5">{manga.chapters}</dd>
+                  <dt className="text-gray-500 text-xs uppercase tracking-wider">
+                    Chapters
+                  </dt>
+                  <dd className="text-gray-200 font-medium mt-0.5">
+                    {manga.chapters}
+                  </dd>
                 </div>
               )}
               {manga.volumes != null && (
                 <div>
-                  <dt className="text-gray-500 text-xs uppercase tracking-wider">Volumes</dt>
-                  <dd className="text-gray-200 font-medium mt-0.5">{manga.volumes}</dd>
+                  <dt className="text-gray-500 text-xs uppercase tracking-wider">
+                    Volumes
+                  </dt>
+                  <dd className="text-gray-200 font-medium mt-0.5">
+                    {manga.volumes}
+                  </dd>
                 </div>
               )}
               {manga.published?.string && (
                 <div className="col-span-2">
-                  <dt className="text-gray-500 text-xs uppercase tracking-wider">Published</dt>
-                  <dd className="text-gray-200 font-medium mt-0.5">{manga.published.string}</dd>
+                  <dt className="text-gray-500 text-xs uppercase tracking-wider">
+                    Published
+                  </dt>
+                  <dd className="text-gray-200 font-medium mt-0.5">
+                    {manga.published.string}
+                  </dd>
                 </div>
               )}
               {manga.authors && manga.authors.length > 0 && (
                 <div className="col-span-2">
-                  <dt className="text-gray-500 text-xs uppercase tracking-wider">Authors</dt>
+                  <dt className="text-gray-500 text-xs uppercase tracking-wider">
+                    Authors
+                  </dt>
                   <dd className="text-gray-200 font-medium mt-0.5">
                     {manga.authors.map((a) => a.name).join(", ")}
                   </dd>
@@ -212,7 +283,9 @@ export default function Page() {
               )}
               {manga.serializations && manga.serializations.length > 0 && (
                 <div className="col-span-2">
-                  <dt className="text-gray-500 text-xs uppercase tracking-wider">Serialization</dt>
+                  <dt className="text-gray-500 text-xs uppercase tracking-wider">
+                    Serialization
+                  </dt>
                   <dd className="text-gray-200 font-medium mt-0.5">
                     {manga.serializations.map((s) => s.name).join(", ")}
                   </dd>
@@ -261,7 +334,10 @@ export default function Page() {
             </h2>
             <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-4">
               {characters.map(({ character, role }) => (
-                <div key={character.mal_id} className="flex flex-col items-center group">
+                <div
+                  key={character.mal_id}
+                  className="flex flex-col items-center group"
+                >
                   <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden shadow-lg border border-gray-800 transition-all duration-300 group-hover:scale-105 group-hover:shadow-blue-500/20 group-hover:shadow-2xl">
                     <Image
                       src={character.images.jpg.image_url}
@@ -274,7 +350,9 @@ export default function Page() {
                   <p className="text-xs font-semibold text-center mt-2 text-gray-300 group-hover:text-white transition-colors w-full overflow-hidden text-ellipsis whitespace-nowrap">
                     {character.name}
                   </p>
-                  <p className="text-[10px] text-gray-500 text-center">{role}</p>
+                  <p className="text-[10px] text-gray-500 text-center">
+                    {role}
+                  </p>
                 </div>
               ))}
             </div>
