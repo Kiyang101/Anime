@@ -7,21 +7,21 @@ const siteUrl = "https://anime-alpha-drab.vercel.app";
 
 export const metadata: Metadata = {
   title: {
-    default: "Anime Explorer",
+    default: "Anime Explorer — Browse Anime, Manga & Characters",
     template: "%s | Anime Explorer",
   },
-  description: "Browse and search anime, manga, and characters powered by the MyAnimeList database.",
+  description: "Discover and explore thousands of anime series, manga titles, and characters from the MyAnimeList database. Search by genre, season, and more.",
   openGraph: {
     type: "website",
     siteName: "Anime Explorer",
-    title: "Anime Explorer",
-    description: "Browse and search anime, manga, and characters powered by the MyAnimeList database.",
+    title: "Anime Explorer — Browse Anime, Manga & Characters",
+    description: "Discover and explore thousands of anime series, manga titles, and characters from the MyAnimeList database. Search by genre, season, and more.",
     url: siteUrl,
   },
   twitter: {
     card: "summary",
-    title: "Anime Explorer",
-    description: "Browse and search anime, manga, and characters powered by the MyAnimeList database.",
+    title: "Anime Explorer — Browse Anime, Manga & Characters",
+    description: "Discover and explore thousands of anime series, manga titles, and characters from the MyAnimeList database. Search by genre, season, and more.",
   },
 };
 
