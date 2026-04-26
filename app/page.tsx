@@ -5,6 +5,13 @@ import ClearSessionLink from "@/components/ClearSessionLink";
 import RecommendationRow from "@/components/RecommendationRow";
 import useAnimeAPI from "@/service/api";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Home",
+  description: "Discover top anime, manga, and characters from the MyAnimeList database.",
+};
+
 // Cache the rendered page for 1 hour — API calls happen at most once per hour in production
 export const revalidate = 3600;
 
