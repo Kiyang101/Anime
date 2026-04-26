@@ -96,7 +96,7 @@ export default function Page() {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* LEFT COLUMN */}
           <div className="w-full lg:w-[320px] shrink-0 flex flex-col gap-6">
-            <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden shadow-2xl shadow-blue-500/10 border border-gray-800">
+            <div className="relative w-full aspect-3/4 rounded-xl overflow-hidden shadow-2xl shadow-blue-500/10 border border-gray-800">
               <Image
                 className="object-cover"
                 src={character.images.jpg.image_url}
@@ -165,7 +165,7 @@ export default function Page() {
                       href={`/anime/${entry.anime.mal_id}`}
                       className="group flex flex-col bg-gray-800/30 rounded-lg overflow-hidden border border-gray-700/50 hover:border-blue-500/50 transition-all hover:shadow-lg hover:shadow-blue-500/10"
                     >
-                      <div className="relative aspect-[3/4] w-full overflow-hidden">
+                      <div className="relative aspect-3/4 w-full overflow-hidden">
                         <Image
                           src={entry.anime.images.jpg.large_image_url}
                           alt={entry.anime.title}
@@ -200,7 +200,7 @@ export default function Page() {
                       href={`/manga/${entry.manga.mal_id}`}
                       className="group flex flex-col bg-gray-800/30 rounded-lg overflow-hidden border border-gray-700/50 hover:border-blue-500/50 transition-all hover:shadow-lg hover:shadow-blue-500/10"
                     >
-                      <div className="relative aspect-[3/4] w-full overflow-hidden">
+                      <div className="relative aspect-3/4 w-full overflow-hidden">
                         <Image
                           src={entry.manga.images.jpg.large_image_url}
                           alt={entry.manga.title}

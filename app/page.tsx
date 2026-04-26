@@ -41,6 +41,7 @@ interface AnimeItem {
   synopsis: string;
   score?: number;
   type?: string;
+  episodes?: number;
   status?: string;
   genres: { mal_id: number; name: string }[];
   images: { jpg: { large_image_url: string } };
@@ -169,6 +170,7 @@ export default async function Home() {
     synopsis: a.synopsis,
     score: a.score,
     type: a.type,
+    episodes: a.episodes,
     genres: a.genres,
     images: a.images,
   }));
