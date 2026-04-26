@@ -55,23 +55,43 @@ export default function Page() {
     sfw: true,
   });
 
-  // 2. Restore state from sessionStorage on initial mount
+  // 2. Restore state — URL params (from landing page "View All") take priority over sessionStorage
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlSeason = params.get("season");
+    const urlYear = params.get("year");
+    const urlOrderBy = params.get("orderBy");
+    const urlSort = params.get("sort");
+    const urlType = params.get("type");
+    const urlStatus = params.get("status");
+
+    if (urlSeason && urlYear) {
+      setSeasonData({ season: urlSeason, year: urlYear, sfw: true });
+      setIsRestored(true);
+      return;
+    }
+
+    if (urlOrderBy || urlSort || urlType || urlStatus) {
+      setSearchParamsState((prev) => ({
+        ...prev,
+        orderBy: urlOrderBy || "",
+        sort: urlSort || "",
+        type: urlType || "",
+        status: urlStatus || "",
+      }));
+      setIsRestored(true);
+      return;
+    }
+
     const savedPage = sessionStorage.getItem("anime_page");
     const savedSeason = sessionStorage.getItem("anime_season");
     const savedSearch = sessionStorage.getItem("anime_search");
-
-    // console.log("Restoring state from sessionStorage:", {
-    //   page: JSON.parse(savedPage),
-    //   season: JSON.parse(savedSeason),
-    //   search: JSON.parse(savedSearch),
-    // });
 
     if (savedPage) setPage(JSON.parse(savedPage));
     if (savedSeason) setSeasonData(JSON.parse(savedSeason));
     if (savedSearch) setSearchParamsState(JSON.parse(savedSearch));
 
-    setIsRestored(true); // Mark as ready to fetch
+    setIsRestored(true);
   }, []);
 
   // 3. Save state to sessionStorage whenever it changes

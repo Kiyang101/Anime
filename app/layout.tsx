@@ -21,7 +21,7 @@ export default function RootLayout({
     >
       <body className="">
         <Navbar />
-        <div className="max-h-[90dvh] h-[90dvh] overflow-y-auto overflow-x-hidden custom-scrollbar">
+        <div id="main-scroll-container" className="max-h-[90dvh] h-[90dvh] overflow-y-auto overflow-x-hidden custom-scrollbar">
           {children}
           <Analytics />
         </div>

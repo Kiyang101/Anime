@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ClearSessionLink from "./ClearSessionLink";
 
 export default function Navbar() {
   return (
@@ -13,18 +14,24 @@ export default function Navbar() {
 
         {/* Navigation Links */}
         <div className="flex  space-x-2 md:space-x-4">
-          <Link
+          <ClearSessionLink
             href="/anime"
             className="rounded-lg px-4 py-2 text-base font-medium text-gray-300 transition-all hover:bg-gray-800 hover:text-white"
           >
             Anime Search
-          </Link>
-          <Link
-            href="/upcoming"
+          </ClearSessionLink>
+          <ClearSessionLink
+            href="/characters"
             className="rounded-lg px-4 py-2 text-base font-medium text-gray-300 transition-all hover:bg-gray-800 hover:text-white"
           >
             Character Search
-          </Link>
+          </ClearSessionLink>
+          <ClearSessionLink
+            href="/manga"
+            className="rounded-lg px-4 py-2 text-base font-medium text-gray-300 transition-all hover:bg-gray-800 hover:text-white"
+          >
+            Manga Search
+          </ClearSessionLink>
         </div>
       </div>
     </nav>
